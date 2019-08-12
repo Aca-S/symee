@@ -13,7 +13,6 @@ int main(int argc, char *argv[])
 		shuntingYard(outputQueue, tokenArray, tokenCnt);
 		printf("%lf\n", evaluate(outputQueue));
 	}
-	freeQueue(outputQueue);
 
 	return 0;
 }
