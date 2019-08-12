@@ -4,7 +4,8 @@
 
 int main(int argc, char *argv[])
 {
-	char *str = "5+sin(3*pi/2)";
+	//char *str = "5+sin(3*pi/2)";
+	char *str = argv[1];
 	token tokenArray[1024];
 	queue *outputQueue = createQueue();
 	int tokenCnt = tokenize(tokenArray, str);
@@ -18,5 +19,5 @@ int main(int argc, char *argv[])
 }
 
 /*TODO	- implement rest of math.h functions
-	- implement safety checks for functions using buffers to make sure they don't overflow
-	- implement better error handling*/
+		- implement safety checks for functions using buffers to make sure they don't overflow
+		- implement better error handling*/

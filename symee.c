@@ -29,23 +29,25 @@ _function functions[] =
 	{"cos", cosF},
 	{"tan", tanF},
 	{"ctan", ctanF},
+	{"sinh", sinhF},
+	{"cosh", coshF},
+	{"tanh", tanhF},
+	{"coth", cothF},
 	{"sqrt", sqrtF},
 	{"abs", absF},
+	{"ln", lnF},
 	{"log", logF},
 	{"exp", expF},
+	{"floor", floorF},
+	{"ceil", ceilF},
+	{"round", roundF},
+	{"trunc", truncF},
 };
 
 _constant constants[] = 
 {
 	{"e", 2.71828182845904523536},
 	{"pi", 3.14159265358979323846},
-	{"x", 2.54},
-	{"y", 3.87},
-	{"z", 3},
-	{"w", 7.46},
-	{"a", -2},
-	{"b", 3},
-	{"c", -1},
 };
 
 int numOfOperators = sizeof(operators) / sizeof(_operator);

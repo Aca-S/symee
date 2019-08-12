@@ -15,8 +15,17 @@ double sinF(double *args, int n);
 double cosF(double *args, int n);
 double tanF(double *args, int n);
 double ctanF(double *args, int n);
+double sinhF(double *args, int n);
+double coshF(double *args, int n);
+double tanhF(double *args, int n);
+double cothF(double *args, int n);
 double absF(double *args, int n);
+double lnF(double *args, int n);
 double logF(double *args, int n);
 double expF(double *args, int n);
+double floorF(double *args, int n);
+double ceilF(double *args, int n);
+double roundF(double *args, int n);
+double truncF(double *args, int n);
 
 #endif

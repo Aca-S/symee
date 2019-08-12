@@ -73,14 +73,50 @@ double ctanF(double *args, int n) {
 	return cos(args[0]) / sin(args[0]);
 }
 
+double sinhF(double *args, int n) {
+	return sinh(args[0]);
+}
+
+double coshF(double *args, int n) {
+	return cosh(args[0]);
+}
+
+double tanhF(double *args, int n) {
+	return tanh(args[0]);
+}
+
+double cothF(double *args, int n) {
+	return cosh(args[0]) / sinh(args[0]);
+}
+
 double absF(double *args, int n) {
 	return abs(args[0]);
 }
 
-double logF(double *args, int n) {
+double lnF(double *args, int n) {
 	return log(args[0]);
+}
+
+double logF(double *args, int n) {
+	return log10(args[0]);
 }
 
 double expF(double *args, int n) {
 	return exp(args[0]);
+}
+
+double floorF(double *args, int n) {
+	return floor(args[0]);
+}
+
+double ceilF(double *args, int n) {
+	return ceil(args[0]);
+}
+
+double roundF(double *args, int n) {
+	return round(args[0]);
+}
+
+double truncF(double *args, int n) {
+	return trunc(args[0]);
 }
