@@ -88,5 +88,6 @@ void shuntingYard(queue *outputQueue, token *tokenArray, int tokenCnt);
 double getOperationResult(double first, double second, token operation);
 token doOperation(stackNode **evaluationStack, token operation);
 double evaluate(queue *outputQueue);
+double evaluateExpression(char *str);
 
 #endif

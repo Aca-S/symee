@@ -8,6 +8,7 @@
 #define NUMBER_BUFFER 64
 #define FC_NAME_BUFFER 64
 #define FUNCTION_ARGS 64
+#define MAX_TOKENS 1024
 
 /*-----OPERATOR, FUNCTION AND CONSTANT TABLES-----*/
 _operator operators[] = 
@@ -384,4 +385,13 @@ double evaluate(queue *outputQueue) {
 	pop(&evaluationStack, &result);
 	freeStack(&evaluationStack);
 	return result.data.number;
+}
+
+double evaluateExpression(char *str) {
+	token tokenArray[MAX_TOKENS];
+	queue *outputQueue = createQueue();
+	int tokenCnt = tokenize(tokenArray, str);
+	if(tokenCnt != -1)
+		shuntingYard(outputQueue, tokenArray, tokenCnt);
+	return evaluate(outputQueue);
 }
