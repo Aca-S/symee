@@ -160,7 +160,7 @@ void freeQueue(queue *root) {
 	free(root);
 }
 
-/*-----TOKEN IMPLEMENTATION-----*/
+/*-----TOKENIZATION IMPLEMENTATION-----*/
 int tokenize(token *tokenArray, char *str) {
 	if(str == NULL)
 		return 0;
@@ -192,17 +192,34 @@ int tokenize(token *tokenArray, char *str) {
 			i = 0;
 			continue;
 		}
-		/*Looking for a function call*/
+		/*Looking for a function call or constant*/
 		else if(isalpha(*str))
 		{
 			int i = 0;
-			while(isalpha(*str))
+			while(isalpha(*str) || isdigit(*str))
 			{
 				functionBuffer[i] = *str;
 				i++;
 				*str++;
 			}
 			functionBuffer[i] = '\0';
+			/*Checking for implicit multiplication before the function/constant*/
+			if(tokenCnt != 0 && (tokenArray[tokenCnt - 1].type == NUMBER || tokenArray[tokenCnt - 1].type == RIGHT_PARENTHESIS))
+			{
+				pos = getOperatorPosition('*');
+				if(pos != -1)
+				{
+					tokenArray[tokenCnt].type = OPERATOR;
+					tokenArray[tokenCnt].data.operator.arity = 2;
+					tokenArray[tokenCnt].data.operator.baseData = operators[pos];
+					tokenCnt++;
+				}
+				else
+				{
+					printf("Unknown uperator %c during implicit multiplication\n", '*');
+					return -1;
+				}
+			}
 			if(*str != '(')
 			{
 				pos = getConstantPosition(functionBuffer);
@@ -213,7 +230,7 @@ int tokenize(token *tokenArray, char *str) {
 				}
 				else
 				{
-					printf("Unknown constant %s", functionBuffer);
+					printf("Unknown constant %s\n", functionBuffer);
 					return -1;
 				}
 			}
@@ -228,7 +245,7 @@ int tokenize(token *tokenArray, char *str) {
 				}
 				else
 				{
-					printf("Unknown function %s", functionBuffer);
+					printf("Unknown function %s\n", functionBuffer);
 					return -1;
 				}
 			}
@@ -241,7 +258,25 @@ int tokenize(token *tokenArray, char *str) {
 		{
 			switch(*str)
 			{
-				case '(': tokenArray[tokenCnt].type = LEFT_PARENTHESIS; tokenCnt++; break;
+				case '(':
+					/*Checking for implicit multiplication before the left parenthesis*/
+					if(tokenCnt != 0 && (tokenArray[tokenCnt - 1].type == NUMBER || tokenArray[tokenCnt - 1].type == RIGHT_PARENTHESIS))
+					{
+						pos = getOperatorPosition('*');
+						if(pos != -1)
+						{
+							tokenArray[tokenCnt].type = OPERATOR;
+							tokenArray[tokenCnt].data.operator.arity = 2;
+							tokenArray[tokenCnt].data.operator.baseData = operators[pos];
+							tokenCnt++;
+						}
+						else
+						{
+							printf("Unknown uperator %c during implicit multiplication\n", '*');
+							return -1;
+						}
+					}
+					tokenArray[tokenCnt].type = LEFT_PARENTHESIS; tokenCnt++; break;
 				case ')': tokenArray[tokenCnt].type = RIGHT_PARENTHESIS; tokenCnt++; break;
 				case ',': tokenArray[tokenCnt].type = COMMA; tokenCnt++; break;
 				case ' ': case '\n': case '\t': case '\r': break;
@@ -256,7 +291,7 @@ int tokenize(token *tokenArray, char *str) {
 					}
 					else
 					{
-						printf("Unknown uperator %c", *str);
+						printf("Unknown uperator %c\n", *str);
 						return -1;
 					}
 					break;
