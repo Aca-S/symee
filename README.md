@@ -1,10 +1,6 @@
 # SYMEE (Shunting Yard Math Expression Evaluator)
 
 SYMEE is a simple math expression evaluator based on Edsger Dijkstra's "Shunting Yard" algorithm which is used to convert infix expressions into postfix ones.
-The evaluator currently consists of three main points:
-- Tokenizer (used to split the input expression string into tokens)
-- Infix to postfix converter (based on the Shunting Yard algorithm)
-- Evaluator (used to calculate the final expression value)
 
 ### Features
 - Supports custom operators, functions, constants
@@ -13,6 +9,30 @@ The evaluator currently consists of three main points:
 
 ### Building guide
 gcc example.c symee.c functions.c -lm
+
+### Code structure
+The entire library is contained in four files, which are:
+- symee.c
+- symee.h
+- functions.c
+- functions.h
+
+The symee (symee.c, symee.h) files contain the main part of the code (the evaluator itself) while the function (functions.c, functions.h) files implement custom operator and function definitions and declarations.
+
+The evaluator consists of three main parts:
+- Tokenizer (used to split the input expression string into tokens)
+- Infix to postfix converter (based on the Shunting Yard algorithm)
+- Evaluator (used to calculate the final expression value)
+
+The process is summarized with the following diagram:
+
+![process diagram](https://i.ibb.co/wQG5rTF/symee.png)
+
+It is also important to know the token structure itself:
+
+![token structure](https://i.ibb.co/bd3SMyP/symeetkn.png)
+
+The structures _operator, _function and _constant contain only the base data of the appropriate token type, data which we know based on the token itself (such as precedence of operators) and not the tokens around it (such as arity).
 
 ### How to add custom operators/functions/constants?
 **For operators:**
@@ -26,7 +46,7 @@ gcc example.c symee.c functions.c -lm
 - Add the function code and function name to the functions table near the top of symee.c
 
 **For constants:**
-- Add the constant code and value near to the constants table near the top of symee.c
+- Add the constant code and value to the constants table near the top of symee.c
 
 ### What features I plan to add:
 - Runtime addition of variables
