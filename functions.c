@@ -27,6 +27,18 @@ double powO(double arg1, double arg2) {
 	return pow(arg1, arg2);
 }
 
+double greO(double arg1, double arg2) {
+	return arg1 > arg2;
+}
+
+double lesO(double arg1, double arg2) {
+	return arg1 < arg2;
+}
+
+double equO(double arg1, double arg2) {
+	return arg1 == arg2;
+}
+
 double maxF(double *args, int n) {
 	int i;
 	double max = args[0];

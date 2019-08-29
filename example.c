@@ -1,15 +1,17 @@
 #include "symee.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 int main(int argc, char *argv[])
 {
-	char *str = argv[1];
-	printf("%s = %lf\n", str, evaluateExpression(str));
-
+	expressionInfo expressionState;
+	double res;
+	expressionState = evaluateExpression(argv[1], &res);
+	if(expressionState.status == VALID)
+		printf("%lf\n", res);
+	else
+		printf("Expression error at position %d\n", expressionState.position);
+	
 	return 0;
 }
-
-/* TODO - implement safety checks for functions and constants using buffers to make sure they don't overflow
-		- implement implicit multiplication handling
-		- implement better error handling */

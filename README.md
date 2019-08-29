@@ -30,7 +30,4 @@ gcc example.c symee.c functions.c -lm
 
 ### What features I plan to add:
 - Runtime addition of variables
-- Addition of more custom functions
-- More robust detection of invalid expressions
 - Possible redesign of the tokenization to notation conversion process by feeding each token directly to the infix to postfix converter instead of holding all the tokens in a special token array (could provide a significant performance boost)
-- Simple wrapper function for the entire process which just takes an expression string as input and returns the result

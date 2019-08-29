@@ -11,6 +11,20 @@ typedef enum {
 	COMMA,
 } tokenType;
 
+typedef enum {
+	VALID,
+	INVALID_OPERATOR,
+	INVALID_FUNCTION,
+	INVALID_CONSTANT,
+	EMPTY_EXPRESSION,
+	MISMATCHED_PARENTHESES,
+} expressionStatus;
+
+typedef struct {
+	expressionStatus status;
+	int position;
+} expressionInfo;
+
 typedef struct {
 	char code;
 	double (*function)(double, double);
@@ -56,7 +70,7 @@ typedef struct {
 int getOperatorPosition(char code);
 int getFunctionPosition(char *code);
 int getConstantPosition(char *code);
-int tokenize(token *tokenArray, char *str);
+expressionInfo tokenize(token *tokenArray, char *str);
 
 typedef enum {
 	OK,
@@ -88,6 +102,6 @@ void shuntingYard(queue *outputQueue, token *tokenArray, int tokenCnt);
 double getOperationResult(double first, double second, token operation);
 token doOperation(stackNode **evaluationStack, token operation);
 double evaluate(queue *outputQueue);
-double evaluateExpression(char *str);
+expressionInfo evaluateExpression(char *str, double *result);
 
 #endif

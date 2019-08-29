@@ -19,6 +19,9 @@ _operator operators[] =
 	{'/', divO, 2}, 
 	{'%', remO, 2},
 	{'^', powO, 3},
+	{'>', greO, 0},
+	{'<', lesO, 0},
+	{'=', equO, 0},
 };
 
 _function functions[] = 
@@ -49,6 +52,14 @@ _constant constants[] =
 {
 	{"e", 2.71828182845904523536},
 	{"pi", 3.14159265358979323846},
+	{"phi", 1.61803398874989484820},
+	{"x", 2.54},
+	{"y", 3.87},
+	{"z", 3},
+	{"w", 7.46},
+	{"a", -2},
+	{"b", 3},
+	{"c", -1},
 };
 
 int numOfOperators = sizeof(operators) / sizeof(_operator);
@@ -157,19 +168,25 @@ status get(queue *root, token *popped) {
 void freeQueue(queue *root) {
 	freeStack(&(root->input));
 	freeStack(&(root->output));
-	free(root);
+	if(root != NULL)
+		free(root);
 }
 
 /*-----TOKENIZATION IMPLEMENTATION-----*/
-int tokenize(token *tokenArray, char *str) {
+expressionInfo tokenize(token *tokenArray, char *str) {
+	expressionInfo info;
 	if(str == NULL)
-		return 0;
+	{
+		info.status = EMPTY_EXPRESSION;
+		info.position = 0;
+		return info;
+	}
 	char functionBuffer[FC_NAME_BUFFER];
 	char numberBuffer[NUMBER_BUFFER];
-	
 	int pos;
+	int leftParCnt = 0, rightParCnt = 0;
 	int tokenCnt = 0;
-	while(*str != '\0')
+	while(*str != '\0' && tokenCnt < MAX_TOKENS)
 	{
 		char arityMode = 2;
 		if(tokenCnt == 0 || tokenArray[tokenCnt - 1].type == OPERATOR || tokenArray[tokenCnt - 1].type == LEFT_PARENTHESIS || tokenArray[tokenCnt - 1].type == COMMA)
@@ -181,8 +198,11 @@ int tokenize(token *tokenArray, char *str) {
 			int i = 0;
 			while(isdigit(*str) || *str == '.')
 			{
-				numberBuffer[i] = *str;
-				i++;
+				if(i < NUMBER_BUFFER - 1)
+				{
+					numberBuffer[i] = *str;
+					i++;
+				}	
 				*str++;
 			}
 			numberBuffer[i] = '\0';
@@ -198,8 +218,11 @@ int tokenize(token *tokenArray, char *str) {
 			int i = 0;
 			while(isalpha(*str) || isdigit(*str))
 			{
-				functionBuffer[i] = *str;
-				i++;
+				if(i < FC_NAME_BUFFER - 1)
+				{
+					functionBuffer[i] = *str;
+					i++;
+				}	
 				*str++;
 			}
 			functionBuffer[i] = '\0';
@@ -216,8 +239,9 @@ int tokenize(token *tokenArray, char *str) {
 				}
 				else
 				{
-					printf("Unknown uperator %c during implicit multiplication\n", '*');
-					return -1;
+					info.status = INVALID_OPERATOR;
+					info.position = tokenCnt;
+					return info;
 				}
 			}
 			if(*str != '(')
@@ -230,8 +254,9 @@ int tokenize(token *tokenArray, char *str) {
 				}
 				else
 				{
-					printf("Unknown constant %s\n", functionBuffer);
-					return -1;
+					info.status = INVALID_CONSTANT;
+					info.position = tokenCnt;
+					return info;
 				}
 			}
 			else
@@ -245,8 +270,9 @@ int tokenize(token *tokenArray, char *str) {
 				}
 				else
 				{
-					printf("Unknown function %s\n", functionBuffer);
-					return -1;
+					info.status = INVALID_FUNCTION;
+					info.position = tokenCnt;
+					return info;
 				}
 			}
 			tokenCnt++;
@@ -272,12 +298,13 @@ int tokenize(token *tokenArray, char *str) {
 						}
 						else
 						{
-							printf("Unknown uperator %c during implicit multiplication\n", '*');
-							return -1;
+							info.status = INVALID_OPERATOR;
+							info.position = tokenCnt;
+							return info;
 						}
 					}
-					tokenArray[tokenCnt].type = LEFT_PARENTHESIS; tokenCnt++; break;
-				case ')': tokenArray[tokenCnt].type = RIGHT_PARENTHESIS; tokenCnt++; break;
+					tokenArray[tokenCnt].type = LEFT_PARENTHESIS; tokenCnt++; leftParCnt++; break;
+				case ')': tokenArray[tokenCnt].type = RIGHT_PARENTHESIS; tokenCnt++; rightParCnt++; break;
 				case ',': tokenArray[tokenCnt].type = COMMA; tokenCnt++; break;
 				case ' ': case '\n': case '\t': case '\r': break;
 				default:
@@ -291,15 +318,21 @@ int tokenize(token *tokenArray, char *str) {
 					}
 					else
 					{
-						printf("Unknown uperator %c\n", *str);
-						return -1;
+						info.status = INVALID_OPERATOR;
+						info.position = tokenCnt;
+						return info;
 					}
 					break;
 			}
 		}
 		*str++;
 	}
-	return tokenCnt;
+	if(leftParCnt != rightParCnt)
+		info.status = MISMATCHED_PARENTHESES;
+	else
+		info.status = VALID;
+	info.position = tokenCnt;
+	return info;
 }
 
 /*-----SHUNTING YARD IMPLEMENTATION-----*/
@@ -410,7 +443,8 @@ double evaluate(queue *outputQueue) {
 			for(i = 0; i < popped.data.function.arity; i++)
 			{
 				pop(&evaluationStack, &arg);
-				args[i] = arg.data.number;
+				if(i < FUNCTION_ARGS)
+					args[i] = arg.data.number;
 			}
 			result.data.number = popped.data.function.baseData.function(args, popped.data.function.arity);
 			push(&evaluationStack, result);
@@ -422,11 +456,14 @@ double evaluate(queue *outputQueue) {
 	return result.data.number;
 }
 
-double evaluateExpression(char *str) {
+expressionInfo evaluateExpression(char *str, double *result) {
 	token tokenArray[MAX_TOKENS];
 	queue *outputQueue = createQueue();
-	int tokenCnt = tokenize(tokenArray, str);
-	if(tokenCnt != -1)
-		shuntingYard(outputQueue, tokenArray, tokenCnt);
-	return evaluate(outputQueue);
+	expressionInfo info = tokenize(tokenArray, str);
+	if(info.status == VALID)
+	{
+		shuntingYard(outputQueue, tokenArray, info.position);
+		*result = evaluate(outputQueue);
+	}
+	return info;
 }
