@@ -6,7 +6,7 @@
 #include <string.h>
 
 #define NUMBER_BUFFER 64
-#define FC_NAME_BUFFER 64
+#define FCV_NAME_BUFFER 64
 #define FUNCTION_ARGS 64
 #define MAX_TOKENS 1024
 
@@ -55,9 +55,10 @@ _constant constants[] =
 	{"phi", 1.61803398874989484820},
 };
 
+_variable *variables = NULL;
+
 int numOfOperators = sizeof(operators) / sizeof(_operator);
-int getOperatorPosition(char code)
-{
+int getOperatorPosition(char code) {
 	int i;
 	for(i = 0; i < numOfOperators; i++)
 	{
@@ -67,8 +68,7 @@ int getOperatorPosition(char code)
 	return -1;
 }
 int numOfFunctions = sizeof(functions) / sizeof(_function);
-int getFunctionPosition(char *code)
-{
+int getFunctionPosition(char *code) {
 	int i;
 	for(i = 0; i < numOfFunctions; i++)
 	{
@@ -79,12 +79,36 @@ int getFunctionPosition(char *code)
 }
 
 int numOfConstants = sizeof(constants) / sizeof(_constant);
-int getConstantPosition(char *code)
-{
+int getConstantPosition(char *code) {
 	int i;
 	for(i = 0; i < numOfConstants; i++)
 	{
 		if(strcmp(code, constants[i].code) == 0)
+			return i;
+	}
+	return -1;
+}
+
+int numOfVariables = 0;
+int bindVariable(_variable var) {
+	numOfVariables++;
+	variables = realloc(variables, numOfVariables * sizeof(_variable));
+	if(variables == NULL)
+		return -1;
+	variables[numOfVariables - 1] = var;
+	return 0;
+}
+
+void freeVariables() {
+	if(variables != NULL)
+		free(variables);
+}
+
+int getVariablePosition(char *code) {
+	int i;
+	for(i = 0; i < numOfVariables; i++)
+	{
+		if(strcmp(code, variables[i].code) == 0)
 			return i;
 	}
 	return -1;
@@ -174,7 +198,7 @@ expressionInfo tokenize(token *tokenArray, char *str) {
 		info.position = 0;
 		return info;
 	}
-	char functionBuffer[FC_NAME_BUFFER];
+	char nameBuffer[FCV_NAME_BUFFER];
 	char numberBuffer[NUMBER_BUFFER];
 	int pos;
 	int leftParCnt = 0, rightParCnt = 0;
@@ -211,14 +235,14 @@ expressionInfo tokenize(token *tokenArray, char *str) {
 			int i = 0;
 			while(isalpha(*str) || isdigit(*str))
 			{
-				if(i < FC_NAME_BUFFER - 1)
+				if(i < FCV_NAME_BUFFER - 1)
 				{
-					functionBuffer[i] = *str;
+					nameBuffer[i] = *str;
 					i++;
 				}	
 				*str++;
 			}
-			functionBuffer[i] = '\0';
+			nameBuffer[i] = '\0';
 			/*Checking for implicit multiplication before the function/constant*/
 			if(tokenCnt != 0 && (tokenArray[tokenCnt - 1].type == NUMBER || tokenArray[tokenCnt - 1].type == RIGHT_PARENTHESIS))
 			{
@@ -239,7 +263,7 @@ expressionInfo tokenize(token *tokenArray, char *str) {
 			}
 			if(*str != '(')
 			{
-				pos = getConstantPosition(functionBuffer);
+				pos = getConstantPosition(nameBuffer);
 				if(pos != -1)
 				{
 					tokenArray[tokenCnt].type = CONSTANT;
@@ -247,14 +271,24 @@ expressionInfo tokenize(token *tokenArray, char *str) {
 				}
 				else
 				{
-					info.status = INVALID_CONSTANT;
-					info.position = tokenCnt;
-					return info;
+					/*If it wasn't found in the constants table, check if it's been bound as a variable*/
+					pos = getVariablePosition(nameBuffer);
+					if(pos != -1)
+					{
+						tokenArray[tokenCnt].type = VARIABLE;
+						tokenArray[tokenCnt].data.variable.baseData = variables[pos];
+					}
+					else
+					{
+						info.status = INVALID_CONSTANT;
+						info.position = tokenCnt;
+						return info;
+					}
 				}
 			}
 			else
 			{
-				pos = getFunctionPosition(functionBuffer);
+				pos = getFunctionPosition(nameBuffer);
 				if(pos != -1)
 				{
 					tokenArray[tokenCnt].type = FUNCTION;
@@ -339,7 +373,7 @@ void shuntingYard(queue *outputQueue, token *tokenArray, int tokenCnt) {
 	int i;
 	for(i = 0; i < tokenCnt; i++)
 	{
-		if(tokenArray[i].type == NUMBER || tokenArray[i].type == CONSTANT)
+		if(tokenArray[i].type == NUMBER || tokenArray[i].type == CONSTANT || tokenArray[i].type == VARIABLE)
 		{
 			if(tokenArray[i].type == NUMBER)
 				add(outputQueue, tokenArray[i]);
@@ -347,7 +381,10 @@ void shuntingYard(queue *outputQueue, token *tokenArray, int tokenCnt) {
 			{
 				token tmp;
 				tmp.type = NUMBER;
-				tmp.data.number = tokenArray[i].data.constant.baseData.value;
+				if(tokenArray[i].type == CONSTANT)
+					tmp.data.number = tokenArray[i].data.constant.baseData.value;
+				else
+					tmp.data.number = tokenArray[i].data.variable.baseData.value;
 				add(outputQueue, tmp);
 			}
 		}

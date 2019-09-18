@@ -6,6 +6,7 @@ typedef enum {
 	FUNCTION,
 	NUMBER,
 	CONSTANT,
+	VARIABLE,
 	LEFT_PARENTHESIS,
 	RIGHT_PARENTHESIS,
 	COMMA,
@@ -42,6 +43,11 @@ typedef struct {
 } _constant;
 
 typedef struct {
+	char *code;
+	double value;
+} _variable;
+
+typedef struct {
 	_operator baseData;
 	char arity;
 } operator;
@@ -55,11 +61,16 @@ typedef struct {
 	_constant baseData;
 } constant;
 
+typedef struct {
+	_variable baseData;
+} variable;
+
 typedef union {
 	double number;
 	operator operator;
 	function function;
 	constant constant;
+	variable variable;
 } tokenData;
 
 typedef struct {
@@ -70,6 +81,8 @@ typedef struct {
 int getOperatorPosition(char code);
 int getFunctionPosition(char *code);
 int getConstantPosition(char *code);
+int bindVariable(_variable var);
+void freeVariables();
 expressionInfo tokenize(token *tokenArray, char *str);
 
 typedef enum {
