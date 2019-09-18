@@ -4,6 +4,7 @@ SYMEE is a simple math expression evaluator based on Edsger Dijkstra's "Shunting
 
 ### Features
 - Supports custom operators, functions, constants
+- Runtime binding of variables
 - Number of max function arguments defined in the code (set to 64 by default, can change it to whatever)
 - Composite functions are supported
 
@@ -49,5 +50,4 @@ The structures _operator, _function and _constant contain only the base data of 
 - Add the constant code and value to the constants table near the top of symee.c
 
 ### What features I plan to add:
-- Runtime addition of variables
 - Possible redesign of the tokenization to notation conversion process by feeding each token directly to the infix to postfix converter instead of holding all the tokens in a special token array (could provide a significant performance boost)
