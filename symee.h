@@ -81,6 +81,7 @@ typedef struct {
 int getOperatorPosition(char code);
 int getFunctionPosition(char *code);
 int getConstantPosition(char *code);
+int getVariablePosition(char *code);
 int bindVariable(_variable var);
 void freeVariables();
 expressionInfo tokenize(token *tokenArray, char *str);
