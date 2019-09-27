@@ -101,7 +101,11 @@ int bindVariable(_variable var) {
 
 void freeVariables() {
 	if(variables != NULL)
+	{
 		free(variables);
+		variables = NULL;
+		numOfVariables = 0;
+	}
 }
 
 int getVariablePosition(char *code) {
