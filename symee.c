@@ -16,7 +16,7 @@ _operator operators[] =
 	{'+', addO, 1},
 	{'-', subO, 1},
 	{'*', mulO, 2},
-	{'/', divO, 2}, 
+	{'/', divO, 2},
 	{'%', remO, 2},
 	{'^', powO, 3},
 	{'>', greO, 0},
@@ -67,6 +67,7 @@ int getOperatorPosition(char code) {
 	}
 	return -1;
 }
+
 int numOfFunctions = sizeof(functions) / sizeof(_function);
 int getFunctionPosition(char *code) {
 	int i;
