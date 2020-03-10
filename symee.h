@@ -1,5 +1,5 @@
-#ifndef _MISTEXPR_H_
-#define _MISTEXPR_H_
+#ifndef _SYMEE_H_
+#define _SYMEE_H_
 
 typedef enum {
 	OPERATOR,
