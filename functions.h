@@ -26,8 +26,8 @@ double absF(double *args, int n);
 double lnF(double *args, int n);
 double logF(double *args, int n);
 double expF(double *args, int n);
-double floorF(double *args, int n);
 double ceilF(double *args, int n);
+double floorF(double *args, int n);
 double roundF(double *args, int n);
 double truncF(double *args, int n);
 

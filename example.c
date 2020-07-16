@@ -2,8 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	_variable var1 = {"x", 25};
 	_variable var2 = {"y", -25};
 	bindVariable(var1);

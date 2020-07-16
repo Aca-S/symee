@@ -117,12 +117,12 @@ double expF(double *args, int n) {
 	return exp(args[0]);
 }
 
-double floorF(double *args, int n) {
-	return floor(args[0]);
-}
-
 double ceilF(double *args, int n) {
 	return ceil(args[0]);
+}
+
+double floorF(double *args, int n) {
+	return floor(args[0]);
 }
 
 double roundF(double *args, int n) {
