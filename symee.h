@@ -23,8 +23,11 @@ typedef enum {
 
 typedef struct {
 	expressionStatus status;
-	int position;
+	int realPosition;
+	int tokenPosition;
 } expressionInfo;
+
+extern expressionInfo exprInfo;
 
 typedef struct {
 	char code;
@@ -84,7 +87,7 @@ int getConstantPosition(char *code);
 int getVariablePosition(char *code);
 int bindVariable(_variable var);
 void freeVariables();
-expressionInfo tokenize(token *tokenArray, char *str);
+int tokenize(token *tokenArray, char *str);
 
 typedef enum {
 	OK,
@@ -116,6 +119,6 @@ void shuntingYard(queue *outputQueue, token *tokenArray, int tokenCnt);
 double getOperationResult(double first, double second, token operation);
 token doOperation(stackNode **evaluationStack, token operation);
 double evaluate(queue *outputQueue);
-expressionInfo evaluateExpression(char *str, double *result);
+int evaluateExpression(char *str, double *result);
 
 #endif

@@ -119,6 +119,9 @@ int getVariablePosition(char *code) {
 	return -1;
 }
 
+/*-----GLOBAL STATUS INDICATOR-----*/
+expressionInfo exprInfo;
+
 /*-----STACK IMPLEMENTATION-----*/
 stackNode *newStackNode(token data) {
 	stackNode *node = (stackNode*)malloc(sizeof(stackNode));
@@ -195,19 +198,19 @@ void freeQueue(queue *root) {
 }
 
 /*-----TOKENIZATION IMPLEMENTATION-----*/
-expressionInfo tokenize(token *tokenArray, char *str) {
-	expressionInfo info;
+int tokenize(token *tokenArray, char *str) {
 	if(str == NULL)
 	{
-		info.status = EMPTY_EXPRESSION;
-		info.position = 0;
-		return info;
+		exprInfo.status = EMPTY_EXPRESSION;
+		exprInfo.realPosition = 0;
+		exprInfo.tokenPosition = 0;
+		return -1;
 	}
 	char nameBuffer[FCV_NAME_BUFFER];
 	char numberBuffer[NUMBER_BUFFER];
 	int pos;
 	int leftParCnt = 0, rightParCnt = 0;
-	int tokenCnt = 0;
+	int charCnt = 0, tokenCnt = 0;
 	while(*str != '\0' && tokenCnt < MAX_TOKENS)
 	{
 		char arityMode = 2;
@@ -226,6 +229,7 @@ expressionInfo tokenize(token *tokenArray, char *str) {
 					i++;
 				}	
 				*str++;
+				charCnt++;
 			}
 			numberBuffer[i] = '\0';
 			tokenArray[tokenCnt].type = NUMBER;
@@ -244,8 +248,9 @@ expressionInfo tokenize(token *tokenArray, char *str) {
 				{
 					nameBuffer[i] = *str;
 					i++;
-				}	
+				}
 				*str++;
+				charCnt++;
 			}
 			nameBuffer[i] = '\0';
 			/*Checking for implicit multiplication before the function/constant*/
@@ -261,9 +266,10 @@ expressionInfo tokenize(token *tokenArray, char *str) {
 				}
 				else
 				{
-					info.status = INVALID_OPERATOR;
-					info.position = tokenCnt;
-					return info;
+					exprInfo.status = INVALID_OPERATOR;
+					exprInfo.realPosition = charCnt;
+					exprInfo.tokenPosition = tokenCnt;
+					return -1;
 				}
 			}
 			if(*str != '(')
@@ -285,9 +291,10 @@ expressionInfo tokenize(token *tokenArray, char *str) {
 					}
 					else
 					{
-						info.status = INVALID_CONSTANT;
-						info.position = tokenCnt;
-						return info;
+						exprInfo.status = INVALID_CONSTANT;
+						exprInfo.realPosition = charCnt;
+						exprInfo.tokenPosition = tokenCnt;
+						return -1;
 					}
 				}
 			}
@@ -302,9 +309,10 @@ expressionInfo tokenize(token *tokenArray, char *str) {
 				}
 				else
 				{
-					info.status = INVALID_FUNCTION;
-					info.position = tokenCnt;
-					return info;
+					exprInfo.status = INVALID_FUNCTION;
+					exprInfo.realPosition = charCnt;
+					exprInfo.tokenPosition = tokenCnt;
+					return -1;
 				}
 			}
 			tokenCnt++;
@@ -330,9 +338,10 @@ expressionInfo tokenize(token *tokenArray, char *str) {
 						}
 						else
 						{
-							info.status = INVALID_OPERATOR;
-							info.position = tokenCnt;
-							return info;
+							exprInfo.status = INVALID_OPERATOR;
+							exprInfo.realPosition = charCnt;
+							exprInfo.tokenPosition = tokenCnt;
+							return -1;
 						}
 					}
 					tokenArray[tokenCnt].type = LEFT_PARENTHESIS; tokenCnt++; leftParCnt++; break;
@@ -350,21 +359,28 @@ expressionInfo tokenize(token *tokenArray, char *str) {
 					}
 					else
 					{
-						info.status = INVALID_OPERATOR;
-						info.position = tokenCnt;
-						return info;
+						exprInfo.status = INVALID_OPERATOR;
+						exprInfo.realPosition = charCnt;
+						exprInfo.tokenPosition = tokenCnt;
+						return -1;
 					}
 					break;
 			}
 		}
 		*str++;
+		charCnt++;
 	}
 	if(leftParCnt != rightParCnt)
-		info.status = MISMATCHED_PARENTHESES;
-	else
-		info.status = VALID;
-	info.position = tokenCnt;
-	return info;
+	{
+		exprInfo.status = MISMATCHED_PARENTHESES;
+		exprInfo.realPosition = charCnt;
+		exprInfo.tokenPosition = tokenCnt;
+		return -1;
+	}
+	exprInfo.status = VALID;
+	exprInfo.realPosition = charCnt;
+	exprInfo.tokenPosition = tokenCnt;
+	return tokenCnt;
 }
 
 /*-----SHUNTING YARD IMPLEMENTATION-----*/
@@ -491,14 +507,13 @@ double evaluate(queue *outputQueue) {
 	return result.data.number;
 }
 
-expressionInfo evaluateExpression(char *str, double *result) {
+int evaluateExpression(char *str, double *result) {
 	token tokenArray[MAX_TOKENS];
 	queue *outputQueue = createQueue();
-	expressionInfo info = tokenize(tokenArray, str);
-	if(info.status == VALID)
-	{
-		shuntingYard(outputQueue, tokenArray, info.position);
-		*result = evaluate(outputQueue);
-	}
-	return info;
+	int tokenCnt = tokenize(tokenArray, str);
+	if(tokenCnt == -1)
+		return -1;
+	shuntingYard(outputQueue, tokenArray, tokenCnt);
+	*result = evaluate(outputQueue);
+	return 0;
 }
